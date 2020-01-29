@@ -1,0 +1,2 @@
+python ./attendance.py
+exit

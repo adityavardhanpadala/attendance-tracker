@@ -25,7 +25,7 @@ fi
 
 # clone the repo
 cd
-git clone https://github.com/amfoss/attendance-tracker.git
+git clone https://github.com/adityavardhanpadala/attendance-tracker.git
 
 # create attendance folder
 sudo mkdir -p "$attendance_folder_path"

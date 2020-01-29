@@ -8,7 +8,7 @@ def get_and_save_credentials():
     password = getpass.getpass("Password: ")
     data = {"username": username, "password": password}
     variables = json.dumps(data)
-    url = 'https://api.amfoss.in/?'
+    url = 'https://api.bi0s.in/?'
     mutation = '''
     mutation TokenAuth($username: String!, $password: String!) {
         tokenAuth(username: $username, password: $password) {

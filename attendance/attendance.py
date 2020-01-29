@@ -2,19 +2,19 @@
 
 import sys
 import json
-
+import getpass
 import requests
 from urllib.request import urlopen
 from subprocess import Popen, PIPE
 from os.path import expanduser
 from sys import platform as _platform
 
-
 if _platform == "linux" or _platform == "linux2":
     file_path = "/opt/attendance/"
 elif _platform == "darwin":
     file_path = f"/Users/{sys.argv[1]}/.attendance/"
-
+else:
+    file_path = "C:\\Users\\"+getpass.getuser()+"\\attendance\\"
 
 def get_credentials():
     credentials = ''
@@ -39,18 +39,29 @@ def check_internet_connection():
 
 def get_wifi_list():
     ssid_list = []
-    p = Popen([file_path + 'get_ssid_names.sh'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output, err = p.communicate()
-    output = str(output).split("\\n")
     if _platform == "darwin":
+        p = Popen([file_path + 'get_ssid_names.sh'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        output, err = p.communicate()
+        output = str(output).split("\\n")
         return output
-    else:
+    elif _platform == "linux" or _platform=="linux2":
+        p = Popen([file_path + 'get_ssid_names.sh'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        output, err = p.communicate()
+        output = str(output).split("\\n")
         for name in output:
             name = bytes(name, encoding='ascii').decode('unicode-escape')
             name = str(name).strip(" ")
             name = name.strip()[6:].strip("\"").strip().strip("ESSID:").strip("\"")
             if name:
                 ssid_list.append(name)
+        return ssid_list
+    else:
+        p=Popen(["wifi","scan"],stderr=PIPE,stdout=PIPE)
+        output,err=p.communicate()
+        output=str(output).split("\\r\\n")
+        for i in output:
+                if "SSID" in i and "BSSID" not in i:
+                        ssid_list.append(i.split(": ")[1])
         return ssid_list
 
 
@@ -65,7 +76,7 @@ def fetch_relevant_ssid(wifi_ssid_list):
 def mark_attendance(wifi_ssid_list, credentials):
     data = {'username': credentials['username'], 'password': credentials['password'], 'list': wifi_ssid_list}
     variables = json.dumps(data)
-    url = 'https://api.amfoss.in/?'
+    url = 'https://api.bi0s.in/?'
     mutation = '''
     mutation logAttendance($username: String!, $password: String!, $list: [String]) {
         LogAttendance(username: $username, password: $password, list: $list)
@@ -76,6 +87,9 @@ def mark_attendance(wifi_ssid_list, credentials):
     '''
     r = requests.post(url, json={'query': mutation, 'variables': variables})
     print(r.content)
+    f = open("sorrywin","w")
+    f.write(str(r.content))
+    f.close()
     return False
 
 
